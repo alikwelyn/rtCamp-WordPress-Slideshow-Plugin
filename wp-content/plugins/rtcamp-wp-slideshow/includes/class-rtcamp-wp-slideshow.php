@@ -58,10 +58,14 @@ class Rtcamp_Wp_Slideshow {
      * @package    Rtcamp_Wp_Slideshow
      */
     public function admin_page() {
-        $slides = get_option( 'rtcamp_wp_slideshow_slides', array() );
+        require_once plugin_dir_path( __FILE__ ) . 'class-rtcamp-wp-slideshow-table.php';
+        $table = new My_Slider_Plugin_Table();
+        $table->prepare_items();
         ?>
         <div class="wrap">
             <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+            <?php $table->display(); ?>
+            <a href="#" class="button button-primary"><?php esc_html_e( 'Add New Slider', 'rtcamp-wp-slideshow' ); ?></a>
         </div>
         <?php
     }
