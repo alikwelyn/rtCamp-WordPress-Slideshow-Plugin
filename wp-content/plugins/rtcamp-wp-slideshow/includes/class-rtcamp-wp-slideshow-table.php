@@ -44,8 +44,6 @@ class Rtcamp_Wp_Slideshow_Table extends WP_List_Table {
      */
     public function get_columns() {
         $columns = array(
-            'cb'            => '<input type="checkbox" />',
-            'id'            => esc_html__( 'ID', 'rtcamp-wp-slideshow' ),
             'slider_name'   => esc_html__( 'Slider Name', 'rtcamp-wp-slideshow' ),
             'slider_type'   => esc_html__( 'Slider Type', 'rtcamp-wp-slideshow' ),
             'date_created'  => esc_html__( 'Date Created', 'rtcamp-wp-slideshow' ),
@@ -60,7 +58,6 @@ class Rtcamp_Wp_Slideshow_Table extends WP_List_Table {
      */
     public function get_sortable_columns() {
         $sortable_columns = array(
-            'id' => array( 'id', true ),
             'slider_name' => array( 'slider_name', false ),
             'slider_type' => array( 'slider_type', false ),
             'date_created' => array( 'date_created', false ),
@@ -68,16 +65,6 @@ class Rtcamp_Wp_Slideshow_Table extends WP_List_Table {
             'status' => array( 'status', false ),
         );
         return $sortable_columns;
-    }
-
-    /**
-     * Get the checkbox column for the table.
-     */
-    public function column_cb( $item ) {
-        return sprintf(
-            '<input type="checkbox" name="slider[]" value="%s" />',
-            $item['id']
-        );
     }
 
     /**
