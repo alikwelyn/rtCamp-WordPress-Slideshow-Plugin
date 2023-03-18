@@ -83,6 +83,18 @@ class Rtcamp_Wp_Slideshow {
             $this->edit_slider_page();
             return;
         }
+
+        // Check if the "action" parameter is set to "delete"
+        $action = isset( $_GET['action'] ) ? sanitize_text_field( $_GET['action'] ) : '';
+        if ( 'delete' === $action ) {
+            $this->delete_slider();
+            return;
+        }
+
+        // Display a success message if the slider was deleted successfully
+        if ( 'slider_deleted' === $message ) {
+            printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html__( 'Slider deleted successfully.', 'rtcamp-wp-slideshow' ) );
+        }
         
         ?>
         <div class="wrap">
@@ -183,9 +195,12 @@ class Rtcamp_Wp_Slideshow {
 
     /**
 	 * Render the HTML markup for the edit slider page.
-	 *
-	 * @since    1.0.0
-	 */
+     *
+     * @link       https://github.com/alikwelyn/rtCamp-WordPress-Slideshow-Plugin
+     * @since      1.0.0
+     *
+     * @package    Rtcamp_Wp_Slideshow
+     */
 	public function edit_slider_page() {
 
         global $wpdb;
@@ -198,7 +213,7 @@ class Rtcamp_Wp_Slideshow {
 	    $slider = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $slider_id ) );
 
         echo '<div class="wrap">';
-        echo '<h1>' . esc_html( get_admin_page_title() ).  '- Edit Slider ' . $slider_id .'</h1>';
+        echo '<h1>' . esc_html( get_admin_page_title() ).  '- Edit Slider: ' . $slider_id .'</h1>';
 
 		if ( ! $slider ) {
 			echo '<p>' . esc_html__( 'Invalid slider ID.', 'rtcamp-wp-slideshow' ) . '</p>';
@@ -264,6 +279,55 @@ class Rtcamp_Wp_Slideshow {
 		echo '</form>';
 		echo '</div>';
 
+    }
+
+    /**
+	 * Delete slider
+     *
+     * @link       https://github.com/alikwelyn/rtCamp-WordPress-Slideshow-Plugin
+     * @since      1.0.0
+     *
+     * @package    Rtcamp_Wp_Slideshow
+     */
+    public function delete_slider() {
+        // Get the ID of the slider to delete from the URL query parameter
+        $slider_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
+    
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'rtcamp_wp_slideshow';
+    
+        // Check if the slider exists
+        $slider = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $slider_id ) );
+        if ( ! $slider ) {
+            printf( '<div class="notice notice-warning is-dismissible"><p>%s</p></div>', esc_html__( 'Invalid slider ID.', 'rtcamp-wp-slideshow' ) );
+            return;
+        }
+    
+        // Check if the delete button has been clicked
+        if ( isset( $_POST['submit'] ) && check_admin_referer( 'delete_slider_' . $slider_id ) ) {
+            // Delete the slider
+            $delete_result = $wpdb->delete( $table_name, array( 'id' => $slider_id ) );
+    
+            if ( false === $delete_result ) {
+                printf( '<div class="notice notice-error is-dismissible"><p>%s</p></div>', esc_html__( 'Slider delete failed.', 'rtcamp-wp-slideshow' ) );
+            } else {
+                // Use JavaScript to redirect instead of wp_redirect()
+                echo '<script>window.location.href="' . admin_url( 'admin.php?page=rtcamp-wp-slideshow&message=slider_deleted' ) . '";</script>';
+                exit;
+            }
+        }
+    
+        echo '<div class="wrap">';
+        echo '<h1>' . esc_html( get_admin_page_title() ).  '- Delete Slider: ' . $slider_id .'</h1>';
+    
+        echo '<p>' . esc_html__( 'Are you sure you want to delete this slider?', 'rtcamp-wp-slideshow' ) . '</p>';
+    
+        // Display the delete slider form
+        echo '<form method="post">';
+        wp_nonce_field( 'delete_slider_' . $slider_id );
+        submit_button( esc_html__( 'Delete', 'rtcamp-wp-slideshow' ), 'delete' );
+        echo '</form>';
+        echo '</div>';
     }
 
 }
