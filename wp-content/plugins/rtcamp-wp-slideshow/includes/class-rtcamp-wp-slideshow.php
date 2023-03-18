@@ -76,6 +76,13 @@ class Rtcamp_Wp_Slideshow {
         if ( 'slider_added' === $message ) {
             printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html__( 'Slider added successfully.', 'rtcamp-wp-slideshow' ) );
         }
+
+        // Check if the "action" parameter is set to "edit"
+        $action = isset( $_GET['action'] ) ? sanitize_text_field( $_GET['action'] ) : '';
+        if ( 'edit' === $action ) {
+            $this->edit_slider_page();
+            return;
+        }
         
         ?>
         <div class="wrap">
@@ -172,6 +179,91 @@ class Rtcamp_Wp_Slideshow {
         // Use JavaScript to redirect instead of wp_redirect()
         echo '<script>window.location.href="' . admin_url( 'admin.php?page=rtcamp-wp-slideshow&message=slider_added' ) . '";</script>';
         exit;
+    }
+
+    /**
+	 * Render the HTML markup for the edit slider page.
+	 *
+	 * @since    1.0.0
+	 */
+	public function edit_slider_page() {
+
+        global $wpdb;
+	    $table_name = $wpdb->prefix . 'rtcamp_wp_slideshow';
+
+        // Get the ID of the slider to edit from the URL query parameter
+        $slider_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
+
+		// Load the slider data
+	    $slider = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $slider_id ) );
+
+        echo '<div class="wrap">';
+        echo '<h1>' . esc_html( get_admin_page_title() ).  '- Edit Slider ' . $slider_id .'</h1>';
+
+		if ( ! $slider ) {
+			echo '<p>' . esc_html__( 'Invalid slider ID.', 'rtcamp-wp-slideshow' ) . '</p>';
+			return;
+		}
+
+		// Check if the form has been submitted
+        if ( isset( $_POST['submit'] ) && check_admin_referer( 'edit_slider_' . $slider_id ) ) {
+            // Save the updated slider data
+            $name = isset( $_POST['name'] ) ? sanitize_text_field( $_POST['name'] ) : '';
+            $type = isset( $_POST['type'] ) ? sanitize_text_field( $_POST['type'] ) : '';
+            $status = isset( $_POST['status'] ) ? sanitize_text_field( $_POST['status'] ) : '';
+    
+            $update_args = array(
+                'id' => $slider_id,
+                'slider_name' => $name,
+                'slider_type' => $type,
+                'status' => $status,
+                'date_updated' => current_time( 'mysql' ),
+            );
+    
+            $update_result = $wpdb->update( $table_name, $update_args, array( 'id' => $slider_id ) );
+
+            if ( false === $update_result ) {
+                printf( '<div class="notice notice-error is-dismissible"><p>%s</p></div>', esc_html__( 'Slider updated successfully.', 'rtcamp-wp-slideshow' ) );
+            } else {
+                printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html__( 'Slider updated successfully.', 'rtcamp-wp-slideshow' ) );
+            }
+
+            // Reload the slider data to display the updated values
+		    $slider = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $slider_id ) );
+        }
+
+        // Display the slider edit form
+		echo '<form method="post">';
+		wp_nonce_field( 'edit_slider_' . $slider_id );
+
+		echo '<table class="form-table">';
+		echo '<tr>';
+		echo '<th>' . esc_html__( 'Slider Name', 'rtcamp-wp-slideshow' ) . '</th>';
+		echo '<td><input type="text" name="name" value="' . esc_attr( $slider->slider_name ) . '" /></td>';
+		echo '</tr>';
+
+        echo '<tr>';
+        echo '<th>' . esc_html__( 'Type', 'rtcamp-wp-slideshow' ) . '</th>';
+        echo '<td><input type="text" name="type" value="' . esc_attr( $slider->slider_type ) . '" /></td>';
+        echo '</tr>';
+
+		echo '<tr>';
+		echo '<th>' . esc_html__( 'Status', 'rtcamp-wp-slideshow' ) . '</th>';
+		echo '<td>';
+		echo '<select name="status">';
+		echo '<option value="draft"' . selected( 'draft', $slider->status, false ) . '>' . esc_html__( 'Draft', 'rtcamp-wp-slideshow' ) . '</option>';
+		echo '<option value="publish"' . selected( 'publish', $slider->status, false ) . '>' . esc_html__( 'Publish', 'rtcamp-wp-slideshow' ) . '</option>';
+        echo '</select>';
+		echo '</td>';
+		echo '</tr>';
+
+		echo '</table>';
+
+		submit_button();
+
+		echo '</form>';
+		echo '</div>';
+
     }
 
 }

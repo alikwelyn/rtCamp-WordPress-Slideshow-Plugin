@@ -13,7 +13,7 @@ class Rtcamp_Wp_Slideshow_Table extends WP_List_Table {
         global $wpdb;
 
         $table_name = $wpdb->prefix . 'rtcamp_wp_slideshow';
-        $per_page = 10;
+        $per_page = 5;
         $columns = $this->get_columns();
         $hidden = array();
         $sortable = $this->get_sortable_columns();
