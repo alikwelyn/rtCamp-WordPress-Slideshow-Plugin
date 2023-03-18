@@ -1,6 +1,10 @@
 <?php
 
-class My_Slider_Plugin_Table extends WP_List_Table {
+if ( ! class_exists( 'WP_List_Table' ) ) {
+    require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
+}
+
+class Rtcamp_Wp_Slideshow_Table extends WP_List_Table {
 
     /**
      * Prepare the table data.
@@ -8,7 +12,7 @@ class My_Slider_Plugin_Table extends WP_List_Table {
     public function prepare_items() {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'my_slider_plugin_sliders';
+        $table_name = $wpdb->prefix . 'rtcamp_wp_slideshow';
         $per_page = 10;
         $columns = $this->get_columns();
         $hidden = array();
