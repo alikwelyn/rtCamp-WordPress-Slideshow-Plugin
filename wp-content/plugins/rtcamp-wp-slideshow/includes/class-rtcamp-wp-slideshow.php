@@ -43,9 +43,10 @@ class Rtcamp_Wp_Slideshow {
      */
     public function enqueue_scripts( $hook ) {
         if ( 'toplevel_page_rtcamp-wp-slideshow' === $hook ) {
+            wp_enqueue_media();
             wp_enqueue_script( 'jquery-ui-sortable' );
             wp_enqueue_style( 'rtcamp-wp-slideshow-admin', plugins_url( '../admin/css/rtcamp-wp-slideshow-admin.css', __FILE__ ), array(), '1.0.0' );
-            wp_enqueue_script( 'rtcamp-wp-slideshow-admin', plugins_url( '../admin/js/rtcamp-wp-slideshow-admin.js', __FILE__ ), array( 'jquery', 'jquery-ui-sortable' ), '1.0.0', true );
+            wp_enqueue_script( 'rtcamp-wp-slideshow-admin', plugins_url( '../admin/js/rtcamp-wp-slideshow-admin.js', __FILE__ ), array( 'jquery', 'jquery-ui-sortable', 'jquery-ui-dialog' ), '1.0.0', true );
         }
     }
 
@@ -120,7 +121,7 @@ class Rtcamp_Wp_Slideshow {
         }
         ?>
         <div class="wrap">
-            <h1><?php echo esc_html( get_admin_page_title() ); ?> - Add New Slider</h1>
+            <h1><?php echo esc_html( get_admin_page_title() ); ?> - Add New Slider <button type="button" id="add-slide" class="button">Add Slide</button></h1>
             <form method="post">
                 <table class="form-table">
                     <tbody>
@@ -141,6 +142,8 @@ class Rtcamp_Wp_Slideshow {
                         </tr>
                     </tbody>
                 </table>
+                <?php echo '<h2>' . esc_html__( 'Slider Images', 'rtcamp-wp-slideshow' ) . '</h2>'; ?>
+                <div id="slides-container"></div>
                 <?php wp_nonce_field( 'add_slider', 'add_slider_nonce' ); ?>
                 <input type="submit" name="submit" value="<?php esc_attr_e( 'Save Slider', 'rtcamp-wp-slideshow' ); ?>" class="button button-primary">
             </form>
@@ -173,6 +176,10 @@ class Rtcamp_Wp_Slideshow {
         $slider_name = isset( $_POST['slider_name'] ) ? sanitize_text_field( $_POST['slider_name'] ) : '';
         $slider_type = isset( $_POST['slider_type'] ) ? sanitize_text_field( $_POST['slider_type'] ) : '';
         $status = isset( $_POST['status'] ) ? sanitize_text_field( $_POST['status'] ) : '';
+        $slider_images = isset( $_POST['slider_images'] ) ? array_map( 'sanitize_text_field', $_POST['slider_images'] ) : array();
+    
+        // Serialize the slider images
+        $slider_images = serialize( $slider_images );
     
         // Save the slider data to the database
         $table_name = $wpdb->prefix . 'rtcamp_wp_slideshow';
@@ -181,11 +188,12 @@ class Rtcamp_Wp_Slideshow {
             array(
                 'slider_name' => $slider_name,
                 'slider_type' => $slider_type,
+                'slider_images' => $slider_images,
+                'status' => $status,
                 'date_created' => current_time( 'mysql' ),
                 'date_updated' => current_time( 'mysql' ),
-                'status' => $status,
             ),
-            array( '%s', '%s', '%s', '%s', '%s' )
+            array( '%s', '%s', '%s', '%s', '%s', '%s' )
         );
     
         // Use JavaScript to redirect instead of wp_redirect()
@@ -204,23 +212,23 @@ class Rtcamp_Wp_Slideshow {
 	public function edit_slider_page() {
 
         global $wpdb;
-	    $table_name = $wpdb->prefix . 'rtcamp_wp_slideshow';
-
+        $table_name = $wpdb->prefix . 'rtcamp_wp_slideshow';
+    
         // Get the ID of the slider to edit from the URL query parameter
         $slider_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
-
-		// Load the slider data
-	    $slider = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $slider_id ) );
-
+    
+        // Load the slider data
+        $slider = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $slider_id ) );
+    
         echo '<div class="wrap">';
         echo '<h1>' . esc_html( get_admin_page_title() ).  '- Edit Slider: ' . $slider_id .'</h1>';
-
-		if ( ! $slider ) {
-			echo '<p>' . esc_html__( 'Invalid slider ID.', 'rtcamp-wp-slideshow' ) . '</p>';
-			return;
-		}
-
-		// Check if the form has been submitted
+    
+        if ( ! $slider ) {
+            echo '<p>' . esc_html__( 'Invalid slider ID.', 'rtcamp-wp-slideshow' ) . '</p>';
+            return;
+        }
+    
+        // Check if the form has been submitted
         if ( isset( $_POST['submit'] ) && check_admin_referer( 'edit_slider_' . $slider_id ) ) {
             // Save the updated slider data
             $name = isset( $_POST['name'] ) ? sanitize_text_field( $_POST['name'] ) : '';
@@ -236,7 +244,7 @@ class Rtcamp_Wp_Slideshow {
             );
     
             $update_result = $wpdb->update( $table_name, $update_args, array( 'id' => $slider_id ) );
-
+    
             if ( false === $update_result ) {
                 printf( '<div class="notice notice-error is-dismissible"><p>%s</p></div>', esc_html__( 'Slider updated successfully.', 'rtcamp-wp-slideshow' ) );
             } else {
@@ -244,7 +252,7 @@ class Rtcamp_Wp_Slideshow {
             }
 
             // Reload the slider data to display the updated values
-		    $slider = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $slider_id ) );
+            $slider = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $slider_id ) );
         }
 
         // Display the slider edit form

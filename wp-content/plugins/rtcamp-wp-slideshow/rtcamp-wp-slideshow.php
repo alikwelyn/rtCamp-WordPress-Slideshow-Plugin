@@ -31,13 +31,14 @@ function create_table() {
     $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE IF NOT EXISTS $table_name (
-      id mediumint(9) NOT NULL AUTO_INCREMENT,
-      slider_name varchar(255) NOT NULL,
-      slider_type varchar(255) NOT NULL,
-      date_created datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-      date_updated datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-      status varchar(20) NOT NULL,
-      PRIMARY KEY (id)
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        slider_name varchar(255) NOT NULL,
+        slider_type varchar(255) NOT NULL,
+        slider_images longtext,
+        status varchar(20) NOT NULL,
+        date_created datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+        date_updated datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+        PRIMARY KEY (id)
     ) $charset_collate;";
 
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
