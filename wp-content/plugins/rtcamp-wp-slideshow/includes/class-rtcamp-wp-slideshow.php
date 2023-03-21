@@ -433,6 +433,7 @@ class Rtcamp_Wp_Slideshow {
         // Generate the HTML markup for the slider
         $slider_html = '<div class="swiper"><div class="swiper-wrapper">';
         $images = unserialize( $slider_data['slider_images'] );
+        $slider_order = unserialize( $slider_data['slider_order'] ); // unserialize the slider order data
         if ( ! $images ) {
             // Display an error message if the images are not found
             return '<p>No images found for this slider.</p>';
