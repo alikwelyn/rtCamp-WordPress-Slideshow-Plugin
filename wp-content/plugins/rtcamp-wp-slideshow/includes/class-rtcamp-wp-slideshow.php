@@ -193,6 +193,12 @@ class Rtcamp_Wp_Slideshow {
         // Serialize the slider images
         $slider_images = serialize( $slider_images );
     
+        // Get the slider order from the hidden input field
+        $slider_order = isset( $_POST['slider_order'] ) ? sanitize_text_field( $_POST['slider_order'] ) : '';
+    
+        // Serialize the slider order
+        $slider_order = serialize( $slider_order );
+    
         // Save the slider data to the database
         $table_name = $wpdb->prefix . 'rtcamp_wp_slideshow';
         $wpdb->insert(
@@ -200,12 +206,19 @@ class Rtcamp_Wp_Slideshow {
             array(
                 'slider_name' => $slider_name,
                 'slider_images' => $slider_images,
+                'slider_order' => $slider_order, // Add slider order to insert query
                 'status' => $slider_status,
                 'date_created' => current_time( 'mysql' ),
                 'date_updated' => current_time( 'mysql' ),
             ),
-            array( '%s', '%s', '%s', '%s', '%s' )
+            array( '%s', '%s', '%s', '%s', '%s', '%s' )
         );
+    
+        // Get the ID of the new slider
+        $slider_id = $wpdb->insert_id;
+    
+        // Update the slider order in the database
+        update_post_meta( $slider_id, 'slider_order', $slider_order );
     
         // Use JavaScript to redirect instead of wp_redirect()
         echo '<script>window.location.href="' . admin_url( 'admin.php?page=rtcamp-wp-slideshow&message=slider_added' ) . '";</script>';

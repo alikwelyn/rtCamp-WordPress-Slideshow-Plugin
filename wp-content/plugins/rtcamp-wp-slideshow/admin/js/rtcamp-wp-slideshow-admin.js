@@ -5,9 +5,10 @@ jQuery(document).ready(function($) {
         // loop through all slides and update slide names
         $('#slides-container .slide').each(function(index) {
             $(this).find('h4').text('Slide ' + (index + 1));
+            $(this).attr('slider-id', 'slider_order_' + (index + 1)); // Add slider-id attribute
         });
         slideIndex = $('#slides-container .slide').length;
-        if(slideIndex === 0){
+        if (slideIndex === 0) {
             var slideHtml = '';
             slideHtml += 'No images selected';
             $('#slides-container').append(slideHtml);
@@ -16,43 +17,70 @@ jQuery(document).ready(function($) {
 
     updateSlideNames();
 
+    $('#slides-container').sortable({
+        update: function(event, ui) {
+            // Get the new order of the slide items
+            var slideOrder = $('#slides-container .slide').map(function() {
+                return $(this).attr('slider-id');
+            }).get();
+
+            // Update the hidden input field with the new slide order
+            $('#slider_order').remove(); // Remove existing input field
+            $('<input>').attr({
+                type: 'hidden',
+                id: 'slider_order',
+                name: 'slider_order',
+                value: slideOrder.join(',')
+            }).appendTo('form'); // Add new input field with updated slide order
+        }
+    });
+
     $('#add-slide').click(function() {
         var mediaUploader;
         slideIndex++;
         if ( mediaUploader ) {
-            mediaUploader.open();
-            return;
+          mediaUploader.open();
+          return;
         }
         mediaUploader = wp.media.frames.file_frame = wp.media({
-            title: 'Choose Image',
-            button: {
-                text: 'Use this image'
-            },
-            multiple: true // enable multiple image selection
+          title: 'Choose Image',
+          button: {
+            text: 'Use this image'
+          },
+          multiple: true // enable multiple image selection
         });
         mediaUploader.on( 'select', function() {
-            var attachments = mediaUploader.state().get('selection').toJSON();
-            var slideHtml = '';
-            for (var i = 0; i < attachments.length; i++) {
-                var attachment = attachments[i];
-                slideHtml += '<div class="slide">';
-                slideHtml += '<h4>Slide ' + (slideIndex + i) + '</h4>';
-                slideHtml += '<img src="' + attachment.url + '" alt="' + attachment.title + '" height="96" width="96" loading="lazy">';
-                slideHtml += '<input type="hidden" name="slider_images[]" value="' + attachment.url + '">';
-                slideHtml += '<button type="button" class="remove-slide">Remove Slide</button>';
-                slideHtml += '</div>';
-            }
-            if (slideIndex === 1 && $('#slides-container').text() === 'No images selected') {
-                $('#slides-container').html(slideHtml);
-            } else {
-                $('#slides-container').append(slideHtml);
-            }
-            slideIndex += attachments.length;
-
-            // Remove "No images selected" text if it's present
-            if ($('#slides-container').text() === 'No images selected') {
-                $('#slides-container').empty();
-            }
+          var attachments = mediaUploader.state().get('selection').toJSON();
+          var slideHtml = '';
+          for (var i = 0; i < attachments.length; i++) {
+            var attachment = attachments[i];
+            var sliderId = 'slider_order_' + (slideIndex + i);
+            slideHtml += '<div class="slide" slider-id="' + sliderId + '">';
+            slideHtml += '<h4>Slide ' + (slideIndex + i) + '</h4>';
+            slideHtml += '<img src="' + attachment.url + '" alt="' + attachment.title + '" height="96" width="96" loading="lazy">';
+            slideHtml += '<input type="hidden" name="slider_images[]" value="' + attachment.url + '">';
+            slideHtml += '<button type="button" class="remove-slide">Remove Slide</button>';
+            slideHtml += '</div>';
+          }
+          if (slideIndex === 1 && $('#slides-container').text() === 'No images selected') {
+            $('#slides-container').html(slideHtml);
+          } else {
+            $('#slides-container').append(slideHtml);
+          }
+          slideIndex += attachments.length;
+      
+          // Remove "No images selected" text if it's present
+          if ($('#slides-container').text() === 'No images selected') {
+            $('#slides-container').empty();
+          }
+      
+          // Reorder the slider order based on the new slide positions
+          var slideOrder = [];
+          $('#slides-container .slide').each(function() {
+            var sliderId = $(this).attr('slider-id');
+            slideOrder.push(sliderId);
+          });
+          $("#slider_order").val(slideOrder.join());
         });
         mediaUploader.open();
     });

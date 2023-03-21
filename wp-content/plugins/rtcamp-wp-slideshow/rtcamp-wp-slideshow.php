@@ -34,6 +34,7 @@ function create_table() {
         id mediumint(9) NOT NULL AUTO_INCREMENT,
         slider_name varchar(255) NOT NULL,
         slider_images longtext,
+        slider_order longtext,
         status varchar(20) NOT NULL,
         date_created datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
         date_updated datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
