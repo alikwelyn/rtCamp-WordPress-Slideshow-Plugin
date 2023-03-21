@@ -221,7 +221,7 @@ class Rtcamp_Wp_Slideshow {
         $slider = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $slider_id ) );
     
         echo '<div class="wrap">';
-        echo '<h1>' . esc_html( get_admin_page_title() ).  '- Edit Slider: ' . $slider_id .'</h1>';
+        echo '<h1>' . esc_html( get_admin_page_title() ).  '- Edit Slider: ' . $slider_id .' <button type="button" id="add-slide" class="button">Add Slide</button></h1>';
     
         if ( ! $slider ) {
             echo '<p>' . esc_html__( 'Invalid slider ID.', 'rtcamp-wp-slideshow' ) . '</p>';
@@ -234,17 +234,29 @@ class Rtcamp_Wp_Slideshow {
             $name = isset( $_POST['name'] ) ? sanitize_text_field( $_POST['name'] ) : '';
             $type = isset( $_POST['type'] ) ? sanitize_text_field( $_POST['type'] ) : '';
             $status = isset( $_POST['status'] ) ? sanitize_text_field( $_POST['status'] ) : '';
-    
+
+            // Get the serialized data for the images that were not removed
+            $slider_images = array();
+            if ( isset( $_POST['slider_images'] ) && is_array( $_POST['slider_images'] ) ) {
+                foreach ( $_POST['slider_images'] as $image ) {
+                    if ( ! in_array( $image, $_POST['removed_slider_images'] ) ) {
+                        $slider_images[] = $image;
+                    }
+                }
+            }
+            $slider_images = serialize( $slider_images );
+
             $update_args = array(
                 'id' => $slider_id,
                 'slider_name' => $name,
                 'slider_type' => $type,
+                'slider_images' => $slider_images,
                 'status' => $status,
                 'date_updated' => current_time( 'mysql' ),
             );
-    
+
             $update_result = $wpdb->update( $table_name, $update_args, array( 'id' => $slider_id ) );
-    
+
             if ( false === $update_result ) {
                 printf( '<div class="notice notice-error is-dismissible"><p>%s</p></div>', esc_html__( 'Slider updated successfully.', 'rtcamp-wp-slideshow' ) );
             } else {
@@ -281,6 +293,28 @@ class Rtcamp_Wp_Slideshow {
 		echo '</tr>';
 
 		echo '</table>';
+
+        // Unserialize the slider_images data
+        $slider_images = unserialize( $slider->slider_images );
+
+        echo '<h2>' . esc_html__( 'Slider Images - ', 'rtcamp-wp-slideshow' ) . count($slider_images) . '</h2>';
+        // Check if there are any images in the slider_images array
+        if ( is_array( $slider_images ) && count( $slider_images ) > 0 ) {
+            // Loop through the slider_images array and display each image
+            echo '<div id="slides-container">';
+            foreach ( $slider_images as $key => $image ) {
+                $slide_number = $key + 1;
+                echo '<div class="slide">';
+                echo '<h4>Slide ' . $slide_number . '</h4>';
+                echo '<img src="' . esc_attr( $image ) . '" height="96" width="96" loading="lazy" />';
+                echo '<input type="hidden" name="slider_images[' . $key . ']" value="' . esc_attr( $image ) . '" />';
+                echo '<button type="button" class="remove-slide">' . esc_html__( 'Remove', 'rtcamp-wp-slideshow' ) . '</button>';
+                echo '</div>';
+            }
+            echo '</div>';
+        } else {
+            echo '<div id="slides-container"></div>';
+        }
 
 		submit_button();
 

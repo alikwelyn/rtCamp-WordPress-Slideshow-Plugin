@@ -1,6 +1,5 @@
 jQuery(document).ready(function($) {
-    var slideIndex = 0;
-    var slideCount = $('#slides-container .slide').length;
+    var slideIndex = $('#slides-container .slide').length;
 
     function updateSlideNames() {
         // loop through all slides and update slide names
@@ -15,11 +14,7 @@ jQuery(document).ready(function($) {
         }
     }
 
-    if(slideCount === 0){
-        var slideHtml = '';
-        slideHtml += '<span>No images selected</span>';
-        $('#slides-container').append(slideHtml);
-    }
+    updateSlideNames();
 
     $('#add-slide').click(function() {
         var mediaUploader;
@@ -44,17 +39,20 @@ jQuery(document).ready(function($) {
                 slideHtml += '<h4>Slide ' + (slideIndex + i) + '</h4>';
                 slideHtml += '<img src="' + attachment.url + '" alt="' + attachment.title + '" height="96" width="96" loading="lazy">';
                 slideHtml += '<input type="hidden" name="slider_images[]" value="' + attachment.url + '">';
-                slideHtml += '<button type="button" class="remove-slide button">Remove Slide</button>';
+                slideHtml += '<button type="button" class="remove-slide">Remove Slide</button>';
                 slideHtml += '</div>';
             }
-            $('#slides-container').html(slideHtml);
+            if (slideIndex === 1 && $('#slides-container').text() === 'No images selected') {
+                $('#slides-container').html(slideHtml);
+            } else {
+                $('#slides-container').append(slideHtml);
+            }
             slideIndex += attachments.length;
-    
+
             // Remove "No images selected" text if it's present
             if ($('#slides-container').text() === 'No images selected') {
                 $('#slides-container').empty();
             }
-        
         });
         mediaUploader.open();
     });
@@ -62,6 +60,21 @@ jQuery(document).ready(function($) {
     $(document).on('click', '.remove-slide', function() {
         $(this).closest('.slide').remove();
         updateSlideNames();
+    });
+
+    $('.remove-slide').on('click', function(){
+        // Find the parent slide and remove it
+        $(this).closest('.slide').remove();
+        // Get the index of the removed slide
+        var slideIndex = $(this).closest('.slide').index();
+        // Create a hidden input field to mark the image as removed
+        var inputName = 'removed_slider_images[]';
+        var inputValue = $(this).siblings('input').val();
+        $('<input>').attr({
+            type: 'hidden',
+            name: inputName,
+            value: inputValue
+        }).appendTo('form');
     });
 
     $('form').submit(function() {
