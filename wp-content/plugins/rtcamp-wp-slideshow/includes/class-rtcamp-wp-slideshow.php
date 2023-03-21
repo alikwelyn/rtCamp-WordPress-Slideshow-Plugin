@@ -206,7 +206,7 @@ class Rtcamp_Wp_Slideshow {
             array(
                 'slider_name' => $slider_name,
                 'slider_images' => $slider_images,
-                'slider_order' => $slider_order, // Add slider order to insert query
+                'slider_order' => $slider_order,
                 'status' => $slider_status,
                 'date_created' => current_time( 'mysql' ),
                 'date_updated' => current_time( 'mysql' ),
@@ -257,7 +257,7 @@ class Rtcamp_Wp_Slideshow {
             // Save the updated slider data
             $slider_name = isset( $_POST['name'] ) ? sanitize_text_field( $_POST['name'] ) : '';
             $slider_status = isset( $_POST['status'] ) ? sanitize_text_field( $_POST['status'] ) : '';
-
+        
             // Get the serialized data for the images that were not removed
             $slider_images = array();
             if ( isset( $_POST['slider_images'] ) && is_array( $_POST['slider_images'] ) ) {
@@ -268,23 +268,30 @@ class Rtcamp_Wp_Slideshow {
                 }
             }
             $slider_images = serialize( $slider_images );
+            
+            // Get the serialized data for the slider order
+            $slider_order = isset( $_POST['slider_order'] ) ? sanitize_text_field( $_POST['slider_order'] ) : '';
+        
+            // Serialize the slider order
+            $slider_order = serialize( $slider_order );
 
             $update_args = array(
                 'id' => $slider_id,
                 'slider_name' => $slider_name,
                 'slider_images' => $slider_images,
+                'slider_order' => $slider_order,
                 'status' => $slider_status,
                 'date_updated' => current_time( 'mysql' ),
             );
 
             $update_result = $wpdb->update( $table_name, $update_args, array( 'id' => $slider_id ) );
-
+        
             if ( false === $update_result ) {
                 printf( '<div class="notice notice-error is-dismissible"><p>%s</p></div>', esc_html__( 'Slider updated successfully.', 'rtcamp-wp-slideshow' ) );
             } else {
                 printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html__( 'Slider updated successfully.', 'rtcamp-wp-slideshow' ) );
             }
-
+        
             // Reload the slider data to display the updated values
             $slider = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $slider_id ) );
         }
@@ -298,8 +305,6 @@ class Rtcamp_Wp_Slideshow {
 		echo '<th>' . esc_html__( 'Slider Name', 'rtcamp-wp-slideshow' ) . '</th>';
 		echo '<td><input type="text" name="name" value="' . esc_attr( $slider->slider_name ) . '" /></td>';
 		echo '</tr>';
-
-        echo $slider->status;
 
 		echo '<tr>';
         echo '<th>' . esc_html__( 'Status', 'rtcamp-wp-slideshow' ) . '</th>';
@@ -321,6 +326,9 @@ class Rtcamp_Wp_Slideshow {
         // Unserialize the slider_images data
         $slider_images = unserialize( $slider->slider_images );
 
+        // Unserialize the slider_order column value
+        $slider_order = unserialize( $slider->slider_order );
+
         echo '<h2>' . esc_html__( 'Slider Images - ', 'rtcamp-wp-slideshow' ) . count($slider_images) . '</h2>';
         // Check if there are any images in the slider_images array
         if ( is_array( $slider_images ) && count( $slider_images ) > 0 ) {
@@ -328,7 +336,8 @@ class Rtcamp_Wp_Slideshow {
             echo '<div id="slides-container">';
             foreach ( $slider_images as $key => $image ) {
                 $slide_number = $key + 1;
-                echo '<div class="slide">';
+                $slide_id = isset( $slider_order[$key] ) ? $slider_order[$key] : '';
+                echo '<div class="slide" slider-id="' . $slide_id . '">';
                 echo '<h4>Slide ' . $slide_number . '</h4>';
                 echo '<img src="' . esc_attr( $image ) . '" height="96" width="96" loading="lazy" />';
                 echo '<input type="hidden" name="slider_images[' . $key . ']" value="' . esc_attr( $image ) . '" />';
