@@ -33,7 +33,6 @@ function create_table() {
     $sql = "CREATE TABLE IF NOT EXISTS $table_name (
         id mediumint(9) NOT NULL AUTO_INCREMENT,
         slider_name varchar(255) NOT NULL,
-        slider_type varchar(255) NOT NULL,
         slider_images longtext,
         status varchar(20) NOT NULL,
         date_created datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,

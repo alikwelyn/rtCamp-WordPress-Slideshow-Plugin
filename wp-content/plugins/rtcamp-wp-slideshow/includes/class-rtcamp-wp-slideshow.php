@@ -13,6 +13,7 @@ class Rtcamp_Wp_Slideshow {
     public function init() {
         add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+        add_action( 'wp_enqueue_scripts', array( $this, 'theme_enqueue_scripts' ) );
         add_shortcode('rtcamp_wp_slideshow', array( $this, 'rtcamp_wp_slideshow_shortcode' ));
     }
 
@@ -49,6 +50,21 @@ class Rtcamp_Wp_Slideshow {
             wp_enqueue_style( 'rtcamp-wp-slideshow-admin', plugins_url( '../admin/css/rtcamp-wp-slideshow-admin.css', __FILE__ ), array(), '1.0.0' );
             wp_enqueue_script( 'rtcamp-wp-slideshow-admin', plugins_url( '../admin/js/rtcamp-wp-slideshow-admin.js', __FILE__ ), array( 'jquery', 'jquery-ui-sortable', 'jquery-ui-dialog' ), '1.0.0', true );
         }
+    }
+
+    /**
+     * Enqueue scripts and styles on theme.
+     *
+     * @link       https://github.com/alikwelyn/rtCamp-WordPress-Slideshow-Plugin
+     * @since      1.0.0
+     *
+     * @package    Rtcamp_Wp_Slideshow
+     */
+    public function theme_enqueue_scripts( $hook ) {
+        wp_enqueue_script( 'jquery' );
+        wp_enqueue_style( 'swiper-css', 'https://unpkg.com/swiper/swiper-bundle.min.css' );
+        wp_enqueue_script( 'swiper-js', 'https://unpkg.com/swiper/swiper-bundle.min.js', array( 'jquery' ), '1.0.0', true );
+        wp_enqueue_script( 'rtcamp-wp-slideshow', plugin_dir_url( __FILE__ ) . '../client/js/rtcamp-wp-slideshow.js', array( 'jquery' ), '1.0.0', true );
     }
 
     /**
@@ -131,10 +147,6 @@ class Rtcamp_Wp_Slideshow {
                             <td><input type="text" name="slider_name" value=""></td>
                         </tr>
                         <tr>
-                            <th scope="row"><?php esc_html_e( 'Slider Type', 'rtcamp-wp-slideshow' ); ?></th>
-                            <td><input type="text" name="slider_type" value=""></td>
-                        </tr>
-                        <tr>
                             <th scope="row"><?php esc_html_e( 'Status', 'rtcamp-wp-slideshow' ); ?></th>
                             <td><select name="status">
                                 <option value="draft"><?php esc_html_e( 'Draft', 'rtcamp-wp-slideshow' ); ?></option>
@@ -175,8 +187,7 @@ class Rtcamp_Wp_Slideshow {
     
         // Get the slider data from the form
         $slider_name = isset( $_POST['slider_name'] ) ? sanitize_text_field( $_POST['slider_name'] ) : '';
-        $slider_type = isset( $_POST['slider_type'] ) ? sanitize_text_field( $_POST['slider_type'] ) : '';
-        $status = isset( $_POST['status'] ) ? sanitize_text_field( $_POST['status'] ) : '';
+        $slider_status = isset( $_POST['status'] ) ? sanitize_text_field( $_POST['status'] ) : '';
         $slider_images = isset( $_POST['slider_images'] ) ? array_map( 'sanitize_text_field', $_POST['slider_images'] ) : array();
     
         // Serialize the slider images
@@ -188,13 +199,12 @@ class Rtcamp_Wp_Slideshow {
             $table_name,
             array(
                 'slider_name' => $slider_name,
-                'slider_type' => $slider_type,
                 'slider_images' => $slider_images,
-                'status' => $status,
+                'status' => $slider_status,
                 'date_created' => current_time( 'mysql' ),
                 'date_updated' => current_time( 'mysql' ),
             ),
-            array( '%s', '%s', '%s', '%s', '%s', '%s' )
+            array( '%s', '%s', '%s', '%s', '%s' )
         );
     
         // Use JavaScript to redirect instead of wp_redirect()
@@ -232,9 +242,8 @@ class Rtcamp_Wp_Slideshow {
         // Check if the form has been submitted
         if ( isset( $_POST['submit'] ) && check_admin_referer( 'edit_slider_' . $slider_id ) ) {
             // Save the updated slider data
-            $name = isset( $_POST['name'] ) ? sanitize_text_field( $_POST['name'] ) : '';
-            $type = isset( $_POST['type'] ) ? sanitize_text_field( $_POST['type'] ) : '';
-            $status = isset( $_POST['status'] ) ? sanitize_text_field( $_POST['status'] ) : '';
+            $slider_name = isset( $_POST['name'] ) ? sanitize_text_field( $_POST['name'] ) : '';
+            $slider_status = isset( $_POST['status'] ) ? sanitize_text_field( $_POST['status'] ) : '';
 
             // Get the serialized data for the images that were not removed
             $slider_images = array();
@@ -249,10 +258,9 @@ class Rtcamp_Wp_Slideshow {
 
             $update_args = array(
                 'id' => $slider_id,
-                'slider_name' => $name,
-                'slider_type' => $type,
+                'slider_name' => $slider_name,
                 'slider_images' => $slider_images,
-                'status' => $status,
+                'status' => $slider_status,
                 'date_updated' => current_time( 'mysql' ),
             );
 
@@ -278,20 +286,22 @@ class Rtcamp_Wp_Slideshow {
 		echo '<td><input type="text" name="name" value="' . esc_attr( $slider->slider_name ) . '" /></td>';
 		echo '</tr>';
 
-        echo '<tr>';
-        echo '<th>' . esc_html__( 'Type', 'rtcamp-wp-slideshow' ) . '</th>';
-        echo '<td><input type="text" name="type" value="' . esc_attr( $slider->slider_type ) . '" /></td>';
-        echo '</tr>';
+        echo $slider->status;
 
 		echo '<tr>';
-		echo '<th>' . esc_html__( 'Status', 'rtcamp-wp-slideshow' ) . '</th>';
-		echo '<td>';
-		echo '<select name="status">';
-		echo '<option value="draft"' . selected( 'draft', $slider->status, false ) . '>' . esc_html__( 'Draft', 'rtcamp-wp-slideshow' ) . '</option>';
-		echo '<option value="publish"' . selected( 'publish', $slider->status, false ) . '>' . esc_html__( 'Publish', 'rtcamp-wp-slideshow' ) . '</option>';
+        echo '<th>' . esc_html__( 'Status', 'rtcamp-wp-slideshow' ) . '</th>';
+        echo '<td>';
+        echo '<select name="status">';
+        if ( $slider->status == 'published' ) {
+            echo '<option value="draft">' . esc_html__( 'Draft', 'rtcamp-wp-slideshow' ) . '</option>';
+            echo '<option value="published" selected>' . esc_html__( 'Published', 'rtcamp-wp-slideshow' ) . '</option>';
+        } else {
+            echo '<option value="draft" selected>' . esc_html__( 'Draft', 'rtcamp-wp-slideshow' ) . '</option>';
+            echo '<option value="published">' . esc_html__( 'Published', 'rtcamp-wp-slideshow' ) . '</option>';
+        }
         echo '</select>';
-		echo '</td>';
-		echo '</tr>';
+        echo '</td>';
+        echo '</tr>';
 
 		echo '</table>';
 
@@ -384,12 +394,34 @@ class Rtcamp_Wp_Slideshow {
     public function rtcamp_wp_slideshow_shortcode($atts) {
         // Retrieve the slider ID from the shortcode attributes
         $slider_id = $atts['id'];
-        
-        // Generate the shortcode with the slider ID
-        $shortcode = '[slider id="' . $slider_id . '"]';
-        
-        // Return the shortcode
-        return do_shortcode($shortcode);
+    
+        // Retrieve the slider data from the database
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'rtcamp_wp_slideshow';
+        $slider_data = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $slider_id ), ARRAY_A );
+    
+        if ( !$slider_data ) {
+            // Display an error message if the slider data is not found
+            return '<p>Slider not found.</p>';
+        }
+        if( $slider_data['status'] !== "published" ){
+            return '<p>Slider in draft mode.</p>';
+        }
+    
+        // Generate the HTML markup for the slider
+        $slider_html = '<div class="swiper"><div class="swiper-wrapper">';
+        $images = unserialize( $slider_data['slider_images'] );
+        if ( ! $images ) {
+            // Display an error message if the images are not found
+            return '<p>No images found for this slider.</p>';
+        }
+        foreach ( $images as $image ) {
+            $slider_html .= '<div class="swiper-slide"><img src="' . $image . '" alt=""></div>';
+        }
+        $slider_html .= '</div><div class="swiper-pagination"></div><div class="swiper-button-prev"></div><div class="swiper-button-next"></div></div>';
+
+        // Return the slider HTML and JavaScript
+        return $slider_html . $slider_js;
     }
 
 }

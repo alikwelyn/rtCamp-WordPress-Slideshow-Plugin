@@ -45,7 +45,6 @@ class Rtcamp_Wp_Slideshow_Table extends WP_List_Table {
     public function get_columns() {
         $columns = array(
             'slider_name'   => esc_html__( 'Slider Name', 'rtcamp-wp-slideshow' ),
-            'slider_type'   => esc_html__( 'Slider Type', 'rtcamp-wp-slideshow' ),
             'date_created'  => esc_html__( 'Date Created', 'rtcamp-wp-slideshow' ),
             'date_updated'  => esc_html__( 'Date Updated', 'rtcamp-wp-slideshow' ),
             'status'        => esc_html__( 'Status', 'rtcamp-wp-slideshow' ),
@@ -60,7 +59,6 @@ class Rtcamp_Wp_Slideshow_Table extends WP_List_Table {
     public function get_sortable_columns() {
         $sortable_columns = array(
             'slider_name' => array( 'slider_name', false ),
-            'slider_type' => array( 'slider_type', false ),
             'date_created' => array( 'date_created', false ),
             'date_updated' => array( 'date_updated', false ),
             'status' => array( 'status', false ),
@@ -104,14 +102,6 @@ class Rtcamp_Wp_Slideshow_Table extends WP_List_Table {
             esc_html( $item['slider_name'] ),
             $this->row_actions( $actions )
         );
-    }
-
-    
-    /**
-     * Get the column output for the slider type column.
-     */
-    public function column_slider_type( $item ) {
-        return esc_html( $item['slider_type'] );
     }
 
     /**
