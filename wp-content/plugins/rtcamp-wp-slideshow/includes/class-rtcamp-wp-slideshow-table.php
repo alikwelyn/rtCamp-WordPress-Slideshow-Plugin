@@ -49,6 +49,7 @@ class Rtcamp_Wp_Slideshow_Table extends WP_List_Table {
             'date_created'  => esc_html__( 'Date Created', 'rtcamp-wp-slideshow' ),
             'date_updated'  => esc_html__( 'Date Updated', 'rtcamp-wp-slideshow' ),
             'status'        => esc_html__( 'Status', 'rtcamp-wp-slideshow' ),
+            'shortcode'     => esc_html__( 'Shortcode', 'rtcamp-wp-slideshow' ),
         );
         return $columns;
     }
@@ -133,4 +134,17 @@ class Rtcamp_Wp_Slideshow_Table extends WP_List_Table {
     public function column_status( $item ) {
         return esc_html( $item['status'] );
     }
+
+    /**
+     * Get the column output for the shortcode column.
+     */
+    public function column_shortcode( $item ) {
+        $slider_id = $item['id'];
+        $shortcode = '[rtcamp_wp_slideshow id="' . $slider_id . '"]';
+        return sprintf(
+            '<input type="text" value="%s" readonly="readonly" class="rtcamp-wp-slideshow-shortcode" onclick="this.select();" />',
+            esc_attr( $shortcode )
+        );
+    }
+    
 }

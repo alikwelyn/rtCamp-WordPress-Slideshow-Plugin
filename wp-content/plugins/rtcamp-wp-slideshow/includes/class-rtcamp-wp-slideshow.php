@@ -13,6 +13,7 @@ class Rtcamp_Wp_Slideshow {
     public function init() {
         add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+        add_shortcode('rtcamp_wp_slideshow', array( $this, 'rtcamp_wp_slideshow_shortcode' ));
     }
 
     /**
@@ -370,6 +371,25 @@ class Rtcamp_Wp_Slideshow {
         submit_button( esc_html__( 'Delete', 'rtcamp-wp-slideshow' ), 'delete' );
         echo '</form>';
         echo '</div>';
+    }
+    
+    /**
+     * Render the plugin on front-end by shortcode.
+     *
+     * @link       https://github.com/alikwelyn/rtCamp-WordPress-Slideshow-Plugin
+     * @since      1.0.0
+     *
+     * @package    Rtcamp_Wp_Slideshow
+     */
+    public function rtcamp_wp_slideshow_shortcode($atts) {
+        // Retrieve the slider ID from the shortcode attributes
+        $slider_id = $atts['id'];
+        
+        // Generate the shortcode with the slider ID
+        $shortcode = '[slider id="' . $slider_id . '"]';
+        
+        // Return the shortcode
+        return do_shortcode($shortcode);
     }
 
 }
