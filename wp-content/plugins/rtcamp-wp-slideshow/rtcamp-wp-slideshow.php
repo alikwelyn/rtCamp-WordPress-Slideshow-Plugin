@@ -1,7 +1,5 @@
 <?php
-
 /**
- * @wordpress-plugin
  * Plugin Name:       WP Slideshow Plugin
  * Plugin URI:        https://rtcamp.com
  * Description:       A WordPress slideshow plugin tool that allows you to create and display image slideshows on your WordPress website.
@@ -19,18 +17,23 @@
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
-    exit;
+	exit;
 }
 
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-rtcamp-wp-slideshow.php';
-register_activation_hook ( __FILE__, 'create_table' );
+register_activation_hook( __FILE__, 'create_table' );
 
+/**
+ * Create table for slideshow.
+ *
+ * @global $wpdb
+ */
 function create_table() {
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'rtcamp_wp_slideshow';
-    $charset_collate = $wpdb->get_charset_collate();
+	global $wpdb;
+	$table_name      = $wpdb->prefix . 'rtcamp_wp_slideshow';
+	$charset_collate = $wpdb->get_charset_collate();
 
-    $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+	$sql = "CREATE TABLE IF NOT EXISTS $table_name (
         id mediumint(9) NOT NULL AUTO_INCREMENT,
         slider_name varchar(255) NOT NULL,
         slider_images longtext,
@@ -41,13 +44,15 @@ function create_table() {
         PRIMARY KEY (id)
     ) $charset_collate;";
 
-    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-    dbDelta( $sql );
+	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+	dbDelta( $sql );
 }
 
-// Initialize the plugin.
+/**
+ * Init slideshow.
+ */
 function my_slideshow_plugin() {
-    $plugin = new Rtcamp_Wp_Slideshow();
-    $plugin->init();
+	$plugin = new Rtcamp_Wp_Slideshow();
+	$plugin->init();
 }
 my_slideshow_plugin();

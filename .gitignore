@@ -6,6 +6,7 @@
 # Ignore everything in the "wp-content" directory, except the "plugins" and "themes" directories.
 wp-content/*
 wp-content/plugins/index.php
+wp-content/plugins/rtcamp-wp-slideshow/vendor
 !wp-content/plugins/
 
 # Ignore every log files
