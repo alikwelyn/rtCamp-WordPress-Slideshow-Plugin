@@ -7,6 +7,7 @@
 wp-content/*
 wp-content/plugins/index.php
 wp-content/plugins/rtcamp-wp-slideshow/vendor
+wp-content/plugins/rtcamp-wp-slideshow/node_modules
 !wp-content/plugins/
 
 # Ignore every log files

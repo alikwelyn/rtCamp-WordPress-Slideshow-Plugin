@@ -1,4 +1,5 @@
-jQuery(document).ready(function($) {
+"use strict";
+jQuery().ready(function($) {
     var swiper = new Swiper('.swiper', {
         slidesPerView: 1,
         spaceBetween: 10,

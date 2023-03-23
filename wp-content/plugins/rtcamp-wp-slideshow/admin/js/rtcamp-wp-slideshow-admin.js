@@ -1,4 +1,6 @@
-jQuery(document).ready(function($) {
+"use strict";
+jQuery().ready(function($) {
+    var wp = window.wp || {};
     var slideIndex = $('#slides-container .slide').length;
 
     function updateSlideNames() {
@@ -49,31 +51,37 @@ jQuery(document).ready(function($) {
           },
           multiple: true // enable multiple image selection
         });
-        mediaUploader.on( 'select', function() {
+        mediaUploader.on('select', function() {
           var attachments = mediaUploader.state().get('selection').toJSON();
           var slideHtml = '';
-          for (var i = 0; i < attachments.length; i++) {
-            var attachment = attachments[i];
-            var sliderId = 'slider_order_' + (slideIndex + i);
-            slideHtml += '<div class="slide" slider-id="' + sliderId + '">';
-            slideHtml += '<h4>Slide ' + (slideIndex + i) + '</h4>';
-            slideHtml += '<img src="' + attachment.url + '" alt="' + attachment.title + '" height="96" width="96" loading="lazy">';
-            slideHtml += '<input type="hidden" name="slider_images[]" value="' + attachment.url + '">';
-            slideHtml += '<button type="button" class="remove-slide">Remove Slide</button>';
-            slideHtml += '</div>';
+        
+          function createSlideHtml(attachment, index) {
+            var sliderId = 'slider_order_' + (slideIndex + index);
+            return '<div class="slide" slider-id="' + sliderId + '">' +
+            '<h4>Slide ' + (slideIndex + index) + '</h4>' +
+            '<img src="' + attachment.url + '" alt="' + attachment.title + '" ' +
+            'height="96" width="96" loading="lazy">' +
+            '<input type="hidden" name="slider_images[]" value="' + attachment.url + '">' +
+            '<button type="button" class="remove-slide">Remove Slide</button>' +
+            '</div>';
           }
+        
+          for (var i = 0; i < attachments.length; i++) {
+            slideHtml += createSlideHtml(attachments[i], i);
+          }
+        
           if (slideIndex === 1 && $('#slides-container').text() === 'No images selected') {
             $('#slides-container').html(slideHtml);
           } else {
             $('#slides-container').append(slideHtml);
           }
           slideIndex += attachments.length;
-      
+        
           // Remove "No images selected" text if it's present
           if ($('#slides-container').text() === 'No images selected') {
             $('#slides-container').empty();
           }
-      
+        
           // Reorder the slider order based on the new slide positions
           var slideOrder = [];
           $('#slides-container .slide').each(function() {
@@ -85,7 +93,7 @@ jQuery(document).ready(function($) {
         mediaUploader.open();
     });
 
-    $(document).on('click', '.remove-slide', function() {
+    $().on('click', '.remove-slide', function() {
         $(this).closest('.slide').remove();
         updateSlideNames();
     });
@@ -93,8 +101,6 @@ jQuery(document).ready(function($) {
     $('.remove-slide').on('click', function(){
         // Find the parent slide and remove it
         $(this).closest('.slide').remove();
-        // Get the index of the removed slide
-        var slideIndex = $(this).closest('.slide').index();
         // Create a hidden input field to mark the image as removed
         var inputName = 'removed_slider_images[]';
         var inputValue = $(this).siblings('input').val();
