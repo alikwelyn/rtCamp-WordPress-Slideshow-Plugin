@@ -30,7 +30,7 @@ class Rtcamp_Wp_Slideshow_Table extends WP_List_Table {
 		$this->_column_headers = array( $columns, $hidden, $sortable );
 		$current_page          = $this->get_pagenum();
 
-		$total_items = $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %s', $table_name ) ); //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$total_items = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `$table_name`" ) ); //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange
 		$this->items = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange
 			$wpdb->prepare(
 				"SELECT * FROM {$table_name} ORDER BY %s %s LIMIT %d OFFSET %d",

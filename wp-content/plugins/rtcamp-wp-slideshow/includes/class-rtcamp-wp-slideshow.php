@@ -292,8 +292,9 @@ class Rtcamp_Wp_Slideshow {
 			// Get the serialized data for the images that were not removed.
 			$slider_images = array();
 			if ( isset( $_POST['slider_images'] ) && is_array( $_POST['slider_images'] ) ) {
+				$removed_slider_images = isset( $_POST['removed_slider_images'] ) ? $_POST['removed_slider_images'] : array();
 				foreach ( $_POST['slider_images'] as $image ) {
-					if ( ! in_array( $image, $_POST['removed_slider_images'] ) ) {
+					if ( ! in_array( $image, $removed_slider_images ) ) {
 						$slider_images[] = $image;
 					}
 				}
@@ -448,6 +449,7 @@ class Rtcamp_Wp_Slideshow {
 	 * @param array $atts Shortcode attributes.
 	 */
 	public function rtcamp_wp_slideshow_shortcode( $atts ) {
+		$slider_js = '';
 		// Retrieve the slider ID from the shortcode attributes.
 		$slider_id = $atts['id'];
 
