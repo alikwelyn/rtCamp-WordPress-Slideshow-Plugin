@@ -1,0 +1,23 @@
+#slides-container {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+#slides-container span{
+    padding-bottom: 10px;
+}
+#slides-container .slide {
+    display: flex;
+    flex-direction: column;
+}
+#slides-container .slide h4 {
+    text-align: left;
+    margin: 0 0 10px;
+}
+#slides-container .slide img,
+#slides-container .slide button {
+    margin-bottom: 10px;
+}

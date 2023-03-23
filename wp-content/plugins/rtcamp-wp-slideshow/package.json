@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "jshint": "^2.13.6"
+  },
+  "scripts": {
+    "lint-admin-js": "jshint admin/js/rtcamp-wp-slideshow-admin.js",
+    "lint-client-js": "jshint client/js/rtcamp-wp-slideshow.js"
+  }
+}
